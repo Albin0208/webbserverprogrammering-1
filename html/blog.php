@@ -1,12 +1,10 @@
 <?php
+
 /**
  * Page controler för bloggfunktionen
  * 
  * Denna påbörjas i kapitel 4 och får sin slutliga form i kapitel 13
  */
-
-
-
 
 // En array som innehåller tre fingerade inlägg
 // Varje inlägg är en inre array
@@ -34,4 +32,23 @@ $temporary = array(
     )
 );
 
+$slug = filter_input(INPUT_GET, 'slug', FILTER_SANITIZE_URL);
 
+header("Content-type: text/html; charset: utf-8");
+
+$h1span = "Blogg";
+if (empty($slug)) {
+    // echo "<h1>De senaste inläggen</h1>";
+    // foreach ($temporary as $slug => $blogpost) {
+    //     echo "<h2><a href='blog.php?slug={$slug}'>{$blogpost['title']}</h2>\n";
+    // }
+    $template = "list-blog-posts";
+} elseif (array_key_exists($slug, $temporary)) {
+    // echo "<h1>{$temporary[$slug]['title']}</h1>\n";
+    $blogpost = $temporary[$slug];
+    $template = 'single-blog-post';
+} else {
+    header("HTTP/1.0 404 Not Found");
+    $template = 'not-found';
+}
+require "../templates/{$template}.php";
