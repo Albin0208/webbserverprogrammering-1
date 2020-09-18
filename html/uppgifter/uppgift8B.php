@@ -14,15 +14,34 @@ $array = [
 
 PrintArray($array);
 
-rsort($array); #Fixa detta, tar bort key och ersätter med ett nummer
+arsort($array);
 
 PrintArray($array);
+
+asort($array);
+
+PrintArray($array);
+
+uasort($array, "cmp");
+
+PrintArray($array);
+
+function cmp($a, $b)
+{
+    if (strlen($a) == strlen($b))
+        return 0;
+
+    return strlen($a) - strlen($b);
+}
+
+
 
 function PrintArray($array)
 {
     foreach ($array as $country => $capitol) {
         echo "Huvudstaden i {$country} heter {$capitol}.<br>";
     }
+    echo "<br>";
 }
 ?>
 
