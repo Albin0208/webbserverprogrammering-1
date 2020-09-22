@@ -34,8 +34,6 @@ function cmp($a, $b)
     return strlen($a) - strlen($b);
 }
 
-
-
 function PrintArray($array)
 {
     foreach ($array as $country => $capitol) {
