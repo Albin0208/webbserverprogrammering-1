@@ -24,6 +24,13 @@
             echo "Meningen \"" . $word . "\" innehåller " . str_word_count($word) . " ord";
         }
     }
+
+    function FixString($word)
+    {
+        for ($i = 0; $i < strlen($word) - 1; $i++) {
+            # code...
+        }
+    }
     ?>
 </body>
 

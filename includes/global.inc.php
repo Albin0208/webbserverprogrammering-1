@@ -1,8 +1,8 @@
 <?php
 // $CURLOCALE = setlocale( FIXME );
-if ( ! strlen($CURLOCALE) ) {
-    user_error('Locale inte inställd!', E_USER_WARNING);
-}
+// if (!strlen($CURLOCALE)) {
+//     user_error('Locale inte inställd!', E_USER_WARNING);
+// }
 
 
 /**
@@ -25,7 +25,7 @@ function get_dbh()
 {
     // Uppkopplingen återanvänds
     static $dbh;
-    if ( is_null($dbh) ) {
+    if (is_null($dbh)) {
         // Kontroll av "parametrar"
         $dsn    = "mysql:host=localhost;dbname=" . LAXHJ_DB_DBNAME . ";charset=utf8";
 
@@ -36,7 +36,13 @@ function get_dbh()
             PDO::ATTR_DEFAULT_FETCH_MODE       => PDO::FETCH_ASSOC
         );
         try {
-            // FIXME
+            $dbh = new PDO($dsn, LAXHJ_DB_USERNAME, LAXHJ_DB_PASSWORD, $attributes);
+            if (empty($dbh)) {
+                throw new Exception("PDO kunde inte instansieras, uppkopplingen misslyckad");
+            }
+
+            $ts_sql = "SET time_zone = '" . LAXHJ_TZ . "'";
+            $svar = $dbh->query($ts_sql);
 
             // Lite inställningar för MySQL,
             // se https://kb.askmonty.org/en/sql_mode/
@@ -48,11 +54,15 @@ function get_dbh()
             // Idiotsäkra förbindelsen så att vi inte råkar
             // radera eller uppdatera alla poster av misstag
             // eller hämts på tok för mycket data
-            // FIXME
-            
-        }
-        catch(Exception $e) {
-            // FIXME
+            $safe_sql = "SET sql_safe_updates=1, sql_select_limit=1000, sql_max_join_size=1000000";
+            $svar = $dbh->query($safe_sql);
+        } catch (Exception $e) {
+            echo "<pre>";
+            var_dump($e);
+            echo "<hr />";
+            var_dump($dbh->errorInfo());
+            echo "<hr />";
+            exit;
         }
     }
     return $dbh;
@@ -69,4 +79,3 @@ function fetch_blog_comments($articlesID, $dbh)
 {
     // FIXME
 }
-

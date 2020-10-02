@@ -20,8 +20,8 @@
     <div role="main">
         <h2>De senaste blogginläggen</h2>
         <?php
-        foreach ($temporary as $slug => $blogpost) {
-            $slug = urlencode($slug);
+        foreach ($stmt as $blogpost) {
+            $blogpost['slug'] = urlencode($blogpost['slug']);
             echo <<<ARTICLE
     <article class="blogpostlist">
     <h3><a href="blog.php?slug={$slug}">{$blogpost['title']}</a></h3>
