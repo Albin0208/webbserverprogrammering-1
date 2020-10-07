@@ -28,7 +28,9 @@
     function FixString($word)
     {
         for ($i = 0; $i < strlen($word) - 1; $i++) {
-            # code...
+            if ($word[$i] == "å" || "ä" || "ö") {
+                # code...
+            }
         }
     }
     ?>
