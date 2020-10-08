@@ -40,9 +40,9 @@ function get_dbh()
             if (empty($dbh)) {
                 throw new Exception("PDO kunde inte instansieras, uppkopplingen misslyckad");
             }
-
-            $ts_sql = "SET time_zone = '" . LAXHJ_TZ . "'";
-            $svar = $dbh->query($ts_sql);
+            //TODO Ta reda på varöfr timezone inte fungerar
+            // $ts_sql = "SET time_zone = '" . LAXHJ_TZ . "'";
+            // $svar = $dbh->query($ts_sql);
 
             // Lite inställningar för MySQL,
             // se https://kb.askmonty.org/en/sql_mode/
@@ -54,8 +54,9 @@ function get_dbh()
             // Idiotsäkra förbindelsen så att vi inte råkar
             // radera eller uppdatera alla poster av misstag
             // eller hämts på tok för mycket data
-            $safe_sql = "SET sql_safe_updates=1, sql_select_limit=1000, sql_max_join_size=1000000";
-            $svar = $dbh->query($safe_sql);
+            //TODO Ta reda på varför nedanstående producerar ett error
+            // $safe_sql = "SET sql_safe_updates=1, sql_select_limit=1000, sql_max_join_size=1000000";
+            // $svar = $dbh->query($safe_sql);
         } catch (Exception $e) {
             echo "<pre>";
             var_dump($e);
@@ -78,4 +79,17 @@ function get_dbh()
 function fetch_blog_comments($articlesID, $dbh)
 {
     // FIXME
+    $sql = "SELECT * FROM comments WHERE articlesID = :aid ORDER BY ctime ASC";
+    $stmt = $dbh->prepare($sql);
+    $stmt->bindParam(":aid", $articlesID);
+    $stmt->execute();
+    $comments = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    //Tar inte förgivet att FETCH_ASSOC angivits
+
+    //Provisorisk säkring mot XSS, lägg märke till &-tecknet
+    foreach ($comments as &$cmt) {
+        $cmt['name'] = htmlspecialchars($cmt['name'], ENT_QUOTES);
+        $cmt['text'] = htmlspecialchars($cmt['text'], ENT_QUOTES);
+    }
+    return $comments;
 }

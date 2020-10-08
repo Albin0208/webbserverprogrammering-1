@@ -24,9 +24,9 @@
             $blogpost['slug'] = urlencode($blogpost['slug']);
             echo <<<ARTICLE
     <article class="blogpostlist">
-    <h3><a href="blog.php?slug={$slug}">{$blogpost['title']}</a></h3>
+    <h3><a href="blog.php?slug={$blogpost['slug']}">{$blogpost['title']}</a></h3>
     <p><small>Postad {$blogpost['pubdate']} av 
-    {$blogpost['username']}</small></p>
+    {$blogpost['author']}</small></p>
     <div class="blogtext">
     {$blogpost['text']}
     </div>

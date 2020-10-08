@@ -22,13 +22,28 @@
         <article class="singleblogpost">
             <h2>{$blogpost['title']}</h2>
             <p><small>Postad {$blogpost['pubdate']} av 
-            {$blogpost['username']}</small></p>
+            {$blogpost['author']}</small></p>
             <div class="blogtext">
             {$blogpost['text']}
             </div>
     </article>
     </div>
     MAIN;
+
+    foreach ($comments as $cmt) {
+        echo <<<CMT
+            <article class="comment">
+                <h4><a class="c_name" rel="nofollow" href="{$cmt['website']}">{$cmt['name']}</a> säger:</h4>
+                <p class="c_time"><small>{$cmt['ctime']}</small></p>
+                <div class="c_text">
+                    {$cmt['text']}
+                </div>
+            </article>
+            CMT;
+        if (empty($comments)) {
+            echo "<p>Inga kommentarer ännu</p>\n";
+        }
+    }
 
     require "footer.php";
     ?>

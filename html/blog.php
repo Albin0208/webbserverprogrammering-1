@@ -32,10 +32,8 @@
 //     )
 // );
 
-$slug = filter_input(INPUT_GET, 'slug', FILTER_SANITIZE_URL);
-
 header("Content-type: text/html; charset: utf-8");
-
+$slug = filter_input(INPUT_GET, 'slug', FILTER_SANITIZE_URL);
 $h1span = "Blogg";
 
 require "../includes/setting.php";
@@ -43,12 +41,25 @@ require "../includes/global.inc.php";
 $dbh = get_dbh();
 
 if (empty($slug)) {
-    $sql = "SELECT * FROM articles ORDER BY pubdate DESC LIMIT 0,5";
+    // $sql = "SELECT * FROM articles ORDER BY pubdate DESC LIMIT 0,5";
+    $sql = <<<SQL
+        SELECT a . *, CONCAT(u.firstname, ' ', u.lastname) AS author
+        FROM articles AS a
+        NATURAL JOIN users AS u
+        ORDER BY a.pubdate DESC
+        LIMIT 0 , 5
+        SQL;
     $stmt = $dbh->prepare($sql);
     $stmt->execute();
     $template = "list-blog-posts";
 } else {
-    $sql = "SELECT * FROM articles ORDER BY pubdate DESC LIMIT 0,5";
+    // $sql = "SELECT * FROM articles WHERE slug =:slug";
+    $sql = <<<SQL
+        SELECT a . *, CONCAT(u.firstname, ' ', u.lastname) AS author
+        FROM articles AS a
+        NATURAL JOIN users AS u
+        WHERE slug =:slug
+        SQL;
     $stmt = $dbh->prepare($sql);
     $stmt->bindParam(":slug", $slug);
     $stmt->execute();
@@ -57,6 +68,7 @@ if (empty($slug)) {
         header("HTTP/1.0 404 Not Found");
         $template = "not-found";
     } else {
+        $comments = fetch_blog_comments($blogpost['articlesID'], $dbh);
         $template = 'single-blog-post';
     }
 }
@@ -64,14 +76,14 @@ if (empty($slug)) {
 require "../templates/{$template}.php";
 
 // if (empty($slug)) {
-//     // echo "<h1>De senaste inläggen</h1>";
-//     // foreach ($temporary as $slug => $blogpost) {
-//     //     echo "<h2><a href='blog.php?slug={$slug}'>{$blogpost['title']}</h2>\n";
-//     // }
-//     $template = "list-blog-posts";
-// } elseif (array_key_exists($slug, $temporary)) {
-//     // echo "<h1>{$temporary[$slug]['title']}</h1>\n";
-//     $blogpost = $temporary[$slug];
+    //     // echo "<h1>De senaste inläggen</h1>";
+    //     // foreach ($temporary as $slug => $blogpost) {
+        //     //     echo "<h2><a href='blog.php?slug={$slug}'>{$blogpost['title']}</h2>\n";
+        //     // }
+        //     $template = "list-blog-posts";
+        // } elseif (array_key_exists($slug, $temporary)) {
+            //     // echo "<h1>{$temporary[$slug]['title']}</h1>\n";
+            //     $blogpost = $temporary[$slug];
 //     $template = 'single-blog-post';
 // } else {
 //     header("HTTP/1.0 404 Not Found");
