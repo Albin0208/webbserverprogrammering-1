@@ -1,5 +1,7 @@
 <?php
 
+session_start();
+
 /**
  * Page controler för Läxhjälpens sida Om oss
  * 
