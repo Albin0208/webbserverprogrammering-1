@@ -16,7 +16,7 @@ $dbh = get_dbh();
 $b_error['title'] = "";
 $b_error['text'] = "";
 
-if (empty($_GET['id'] && empty($_POST))) {
+if (empty($_GET['id']) && empty($_POST)) {
   //Ett nytt inlägg skrivs, sätt defaultvärden
   $blogpost['articlesID'] = "";
   $blogpost['slug'] = "(skapas automatiskt)";
@@ -28,9 +28,13 @@ if (empty($_GET['id'] && empty($_POST))) {
   //Ett befintligt inlägg ska redigeras
   //I framtiden flyttar vi denna DB-anropande kod till en klass
   $b_id = filter_input(INPUT_GET, 'id', FILTER_SANITIZE_NUMBER_INT);
-  $stmt = $dbh->prepare("SELECT * FROM articles WHERE articlesID = :id");
-  $stmt->bindParam(":id", $b_id);
-  $stmt->execute();
+  // $stmt = $dbh->prepare("SELECT * FROM articles WHERE articlesID = :id");
+  // $stmt->bindParam(":id", $b_id);
+  // $stmt->execute();
+  // $blogpost = $stmt->fetch();
+
+  $blogpost = Articles::fetch($b_id, $dbh);
+  $blogpost = $blogpost->asArray();
 
   if (empty($blogpost)) {
     //Finns inget sådant inlägg

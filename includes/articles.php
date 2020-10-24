@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Blogginlägg = Artiklar på webbplatsen Läxhjälpen
  *
@@ -17,8 +18,8 @@ class Articles
      * Kan läsas med __get()
      * @var int
      */
-    protected $articlesID = null; 
-    
+    protected $articlesID = null;
+
     /**
      * Håller reda på om all data är kontrollerad
      */
@@ -52,9 +53,17 @@ class Articles
      */
     const TEXTHTML = <<<TAGSANDATTRIBUTES
         *[lang|dir]
-        FIXME
+        a[href|rel], abbr[title], em, i, b, strong, span[class], small,
+        div[id], p[id], h3, h4, h5, h6,
+        ul, ol[start], li, dl, dt, dd,
+        table, th[scope], tr, td[colspan|rowspan], col, tbody, thead,
+        tfoot, caption,
+        code, pre, br, kbd, sub, sup,
+        blockquote, ins, del, s, strike, q,
+        img[src|alt],
+        object[data|name|type], param[name|value],
 TAGSANDATTRIBUTES;
-     /* Stöds ej av HTMLPurifier normalt
+    /* Stöds ej av HTMLPurifier normalt
         a[type], mark, time,
         figure, figcaption,
         audio[controls|loop|preload|src],
@@ -76,8 +85,12 @@ TAGSANDATTRIBUTES;
      */
     public function __construct($title, $text, $username, PDO $dbh, $id = null)
     {
-    	// FIXME
-        throw new Exception(__METHOD__ . " not implemented yet in ". __CLASS__);
+        $this->title = $title;
+        $this->text = $text;
+        $this->username = $username;
+        $this->dbh = $dbh;
+        $this->articlesID = $id;
+        // throw new Exception(__METHOD__ . " not implemented yet in " . __CLASS__);
     }
 
     /**
@@ -85,9 +98,11 @@ TAGSANDATTRIBUTES;
      */
     public function __get($varname)
     {
-        throw new Exception(__METHOD__ . " not implemented yet in ". __CLASS__);
-    	// FIXME
-        throw new Exception("Trying to access undefined or protected property ($var) of " . __CLASS__);
+        throw new Exception(__METHOD__ . " not implemented yet in " . __CLASS__);
+        if (in_array($varname, $this->accessibles, true)) {
+            return $this->$varname;
+        }
+        throw new Exception("Trying to access undefined or protected property ($varname) of " . __CLASS__);
     }
 
     /**
@@ -97,12 +112,17 @@ TAGSANDATTRIBUTES;
      * articlesID och username kollas aldrig, vi litar på databasens referensintegritet
      * @uses HTMLPurifier
      */
-    public function validate() {
+    public function validate()
+    {
+        require "../htmlpurifier/library/HTMLPurifier.auto.php";
 
-        // FIXME (hasBeenValidated)
+        if ($this->hasBeenValidated) {
+            return $this->isValid;
+        }
 
         // Preliminär sanering
-        // FIXME
+        $this->title = trim($this->title);
+        $this->text = trim($this->text);
 
         // Flagga för korrekt data
         $this->isValid = true;
@@ -120,17 +140,50 @@ TAGSANDATTRIBUTES;
         // OBS! Manualens varning: Matching characters by Unicode property is not fast...
         $title_regexp = '/^[\p{L}\p{N}\p{Zs}\p{P}\p{S}\p{M}]+$/u';
         $text_regexp  = '/^[\p{L}\p{N}\p{Zs}\p{P}\p{S}\p{M}\n]+$/u';
-        if ( "FIXTHIS" ) {
-            // FIXME - Position 1
+        if (!preg_match($title_regexp, $this->title)) {
+            $this->isValid = false;
+            $this->errorMessages['title'] = "Otillåtna tecken i rubriken";
         } else {
-            // FIXME - Position 2
-            // FIXME - Position 3
+            // Rena HTML-koden
+            $config = HTMLPurifier_Config::createDefault();
+            $config->set('HTML.Allowed', 'em, i');
+            $purifier = new HTMLPurifier($config);
+            $this->title = $purifier->purify($this->title);
+
+            // Kontrollera att längden är mellan 5 och 100 tecken
+            if (mb_strlen($this->title, "utf-8") < 5) {
+                $this->isValid = false;
+                $this->errorMessages['title'] = "För kort rubrik (minimum 5 tecken)";
+            } elseif (mb_strlen($this->title, "utf-8") > 100) {
+                $this->isValid = false;
+                $this->errorMessages['title'] = "För lång rubrik (maximum 100 tecken)";
+            }
         }
-        
-        // FIXME - Position 4
-        
-        // FIXME avslutning
-        throw new Exception(__METHOD__ . " not implemented yet in ". __CLASS__);
+
+        if (!preg_match($text_regexp, $this->text)) {
+            $this->isValid = false;
+            $this->errorMessages['text'] = "Otillåtna tecken i rubriken";
+        } else {
+            // Rena HTML-koden
+            $config = HTMLPurifier_Config::createDefault();
+            $purifier = new HTMLPurifier($config);
+            $config->set('HTML.Trusted', true);
+            $config->set('HTML.Allowed', $this::TEXTHTML);
+            $config->set('Output.Newline', '\n');
+            $this->text = $purifier->purify($this->title);
+
+            if (mb_strlen($this->text, "utf-8") < 100) {
+                $this->isValid = false;
+                $this->errorMessages['text'] = "För kort text (minimum 100 tecken)";
+            } elseif (mb_strlen($this->text, "utf-8") > 10000) {
+                $this->isValid = false;
+                $this->errorMessages['text'] = "För lång text (maximum 10.000 tecken)";
+            }
+        }
+
+        $this->hasBeenValidated = true;
+        return $this->isValid;
+        throw new Exception(__METHOD__ . " not implemented yet in " . __CLASS__);
     }
 
     /**
@@ -152,40 +205,40 @@ TAGSANDATTRIBUTES;
      */
     public function getSlug($force_new = false)
     {
-       if ( !$this->isValid ) {
-           throw new Exception("Attempting to generate slug from invalid data");
-       }
-       // Skapa inte ny slugg till befintlig artikel
-       if ( $this->articlesID && !$force_new ) {
-           $sql  = "SELECT slug FROM articles WHERE articlesID = :id";
-           $stmt = $this->dbh->prepare($sql);
-           $stmt->bindParam(":id", $this->articlesID);
-           $stmt->execute();
-           $this->slug = $stmt->fetchColumn();
-           return $this->slug;
-       }
-       // Utgå från rubriken
-       $slug = mb_strtolower($this->title, "utf-8");
-       // Ta bort alla diakritiska tecken å -> a, û -> u, etc.
-       // Men var snäll mot tyskar (ß -> ss) och danskar (æ -> ae och h -> oe)
+        if (!$this->isValid) {
+            throw new Exception("Attempting to generate slug from invalid data");
+        }
+        // Skapa inte ny slugg till befintlig artikel
+        if ($this->articlesID && !$force_new) {
+            $sql  = "SELECT slug FROM articles WHERE articlesID = :id";
+            $stmt = $this->dbh->prepare($sql);
+            $stmt->bindParam(":id", $this->articlesID);
+            $stmt->execute();
+            $this->slug = $stmt->fetchColumn();
+            return $this->slug;
+        }
+        // Utgå från rubriken
+        $slug = mb_strtolower($this->title, "utf-8");
+        // Ta bort alla diakritiska tecken å -> a, û -> u, etc.
+        // Men var snäll mot tyskar (ß -> ss) och danskar (æ -> ae och h -> oe)
         $slug = preg_replace('/\x{00df}/u', "ss", $slug);
         $slug = preg_replace('/\x{00e6}/u', "ae", $slug);
         $slug = preg_replace('/\x{0153}/u', "oe", $slug);
         $slug = Normalizer::normalize($slug, Normalizer::FORM_D);
-        $slug = preg_replace( '/\p{M}/u', "",$slug);
+        $slug = preg_replace('/\p{M}/u', "", $slug);
         // Ersätt mellanslag och underscore med bindestreck
         // Aldrig mer än ett åt gången
-        $slug = preg_replace( '/[_\p{Zs}]+/u', "-", $slug);
+        $slug = preg_replace('/[_\p{Zs}]+/u', "-", $slug);
         // Ta bort allt utom bokstäver, bindestreck och siffror
-        $slug = preg_replace( '/[^\p{L}\p{N}-]+/u', "", $slug);
+        $slug = preg_replace('/[^\p{L}\p{N}-]+/u', "", $slug);
         // Ta bort inledande och avslutande bindestreck
         // Notera att strim här används med parameter
         $slug = trim($slug, "-");
         // Ta bort om det blir mer än ett bindestreck i följd
-        $slug = preg_replace( '/-{2,}/u', "-", $slug);
+        $slug = preg_replace('/-{2,}/u', "-", $slug);
 
         // Har den skapade sluggen blivit för kort?
-        if ( mb_strlen($slug, "utf-8") <5 ) {
+        if (mb_strlen($slug, "utf-8") < 5) {
             $this->isValid = false;
             $this->errorMessages['title'] = "Rubriken kan inte bli en slugg";
             return false;
@@ -194,7 +247,7 @@ TAGSANDATTRIBUTES;
         // Kortar ner om längre än databasens maxlängd minus 5
         // = plats för att numrera 9999 dubletter
         // Detta händer bara om rubriken är lång
-        if ( mb_strlen($slug, "utf-8") > 45 ) {
+        if (mb_strlen($slug, "utf-8") > 45) {
             // Tar bort de övereskjutande bokstäverna och siffrorna
             // Men klipper aldrig mitt i ett ord
             $slug = preg_replace('/-+?([^-]+)?$/', '', substr($slug, 0, 46));
@@ -206,20 +259,20 @@ TAGSANDATTRIBUTES;
         $stmt->bindParam(":slug", $p_slug);
         $stmt->execute();
         $doubles = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
-        if ( $doubles ) {
-            if ( count($doubles) == 1 ) {
+        if ($doubles) {
+            if (count($doubles) == 1) {
                 // Det finns bara en dublett
                 $slug .= "-1";
             } else {
                 // Hitta högsta räknetalet som tillfogas på slutet
                 // Vi kan inte sortera efter hela texten
                 $highest = 0;
-                foreach ( $doubles as $dbl ) {
-                    if ( (int)substr(strrchr($dbl, "-"), 1) > $highest ) {
+                foreach ($doubles as $dbl) {
+                    if ((int)substr(strrchr($dbl, "-"), 1) > $highest) {
                         $highest = $dbl;
                     }
                 }
-                if ( $highest = 9999 ) {
+                if ($highest = 9999) {
                     $this->isValid = false;
                     $this->errorMessages['title'] = "Rubriken ej originell nog";
                     return false;
@@ -240,8 +293,67 @@ TAGSANDATTRIBUTES;
      */
     public function save()
     {
-    	// FIXME
-        throw new Exception(__METHOD__ . " not implemented yet in ". __CLASS__);
+        //Felaktiga inlägg ska inte sparas
+        if (!$this->isValid || !$this->slug) {
+            throw new Exception("Attempting to svae invalid article");
+        }
+
+        if (empty($this->articlesID)) {
+            //Ny artikel som ska sparas med ett INSERT-kommando i $sql
+            //Position 1
+            if (empty($this->articlesID)) {
+                $sql = <<<SQL
+                INSERT INTO articles (articlesID, slug, title, text, username, pubdate)
+                VALUES (NULL, :slug, :title, :text, :username, :pubdate)
+                SQL;
+                $stmt = $this->dbh->prepare($sql);
+                $stmt->bindParam(":slug", $this->slug);
+                $stmt->bindParam(":title", $this->title);
+                $stmt->bindParam(":text", $this->text);
+                $stmt->bindParam(":username", $this->username);
+                $stmt->execute();
+                $this->articlesID = $this->dbh->lastInsertId();
+            } else {
+                try {
+                    $this->dbh->beginTransaction();
+
+                    $sql = <<<SQL
+                        UPDATE articles SET
+                               title = :title,
+                               text = :text
+                        WHERE articlesID = :articlesID
+                        SQL;
+
+                    $stmt = $this->dbh->prepare($sql);
+                    $stmt->bindParam(":title", $this->title);
+                    $stmt->bindParam(":text", $this->text);
+                    $stmt->bindParam(":articlesID", $this->articlesID);
+                    $stmt->execute();
+                    if ($this->newSlug) {
+                        $sql = "UPDATE articles SET slug = :slug WHERE articlesID = :articlesID";
+                        $stmt = $this->dbh->prepare($sql);
+                        $stmt->bindParam(":slug", $this->slug);
+                        $stmt->bindParam(":articlesID", $this->articlesID);
+                        $stmt->execute();
+                    }
+                    $this->dbh->commit();
+                } catch (Exception $e) {
+                    //Något gick på tok - ångra
+                    $this->dbh->rollBack();
+
+                    //Ingen bra felhantering ännu...
+                    throw new Exception("Uppdatering av artikel misslyckad: " . $e->getMessage());
+                }
+            }
+        } else {
+            //Befintlig artikel ska spara med ett UPDATE-kommando i $sql
+            //Position 2
+        }
+
+        //Vilken artikel var det som ändrades eller skapades
+        return $this->articlesID;
+
+        throw new Exception(__METHOD__ . " not implemented yet in " . __CLASS__);
     }
 
     /**
@@ -254,8 +366,8 @@ TAGSANDATTRIBUTES;
      */
     public static function fetch($id, PDO $dbh, $id_is_slug = false)
     {
-    	// FIXME
-        throw new Exception(__METHOD__ . " not implemented yet in ". __CLASS__);
+        // FIXME
+        throw new Exception(__METHOD__ . " not implemented yet in " . __CLASS__);
     }
 
     /**
@@ -263,8 +375,8 @@ TAGSANDATTRIBUTES;
      */
     public static function fetchList()
     {
-    	// FIXME
-        throw new Exception(__METHOD__ . " not implemented yet in ". __CLASS__);
+        // FIXME
+        throw new Exception(__METHOD__ . " not implemented yet in " . __CLASS__);
     }
 
     /**
@@ -272,9 +384,10 @@ TAGSANDATTRIBUTES;
      */
     public function asArray()
     {
-    	// FIXME (avsnitt 16.2.1)
-        throw new Exception(__METHOD__ . " not implemented yet in ". __CLASS__);
+        foreach ($this->accessibles as $key) {
+            $array[$key] = $this->$key;
+        }
+        return $array;
+        throw new Exception(__METHOD__ . " not implemented yet in " . __CLASS__);
     }
-
 }
-
