@@ -45,6 +45,14 @@
         }
     }
 
+    if (isset($_SESSION['username'])) {
+        echo <<<ELINK
+    <p class="editlink">
+    <a href="editblogpost.php?id={$blogpost['articlesID']}">Redigera inlägg</a>
+    </p>
+    ELINK;
+    }
+
     require "footer.php";
     ?>
 </body>
