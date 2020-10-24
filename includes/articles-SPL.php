@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Blogginlägg = Artiklar på webbplatsen Läxhjälpen
  *
@@ -14,11 +15,11 @@ class Articles implements ArrayAccess
      * Kan läsas med __get()
      * @var int
      */
-    protected $articlesID = null; 
-    
+    protected $articlesID = null;
+
     /**
      * Dessa variabler kan läsas med __get() eller kommas åt som array
-     */ 
+     */
     protected $accessibles = array('articlesID', 'slug', 'title', 'text', 'username', 'pubdate');
 
 
@@ -29,19 +30,19 @@ class Articles implements ArrayAccess
     // Dessa 4 metoder måste finnas när man följer detta interface
     public function offsetExists($offset)
     {
-        if ( in_array($offset, $this->accessibles) ) {
+        if (in_array($offset, $this->accessibles)) {
             return true;
         }
     }
     public function offsetGet($offset)
     {
-        if ( in_array($offset, $this->accessibles) ) {
+        if (in_array($offset, $this->accessibles)) {
             return $this->$offset;
         }
     }
     public function offsetSet($offset, $value)
     {
-        if ( in_array($offset, $this->accessibles) ) {
+        if (in_array($offset, $this->accessibles)) {
             $this->$offset = $value;
         }
     }
@@ -49,6 +50,4 @@ class Articles implements ArrayAccess
     {
         throw new Exception("Deleting properties through array access not allowed in " . __CLASS__);
     }
-
 }
-

@@ -301,53 +301,50 @@ TAGSANDATTRIBUTES;
         if (empty($this->articlesID)) {
             //Ny artikel som ska sparas med ett INSERT-kommando i $sql
             //Position 1
-            if (empty($this->articlesID)) {
-                $sql = <<<SQL
+            $sql = <<<SQL
                 INSERT INTO articles (articlesID, slug, title, text, username, pubdate)
                 VALUES (NULL, :slug, :title, :text, :username, :pubdate)
                 SQL;
-                $stmt = $this->dbh->prepare($sql);
-                $stmt->bindParam(":slug", $this->slug);
-                $stmt->bindParam(":title", $this->title);
-                $stmt->bindParam(":text", $this->text);
-                $stmt->bindParam(":username", $this->username);
-                $stmt->execute();
-                $this->articlesID = $this->dbh->lastInsertId();
-            } else {
-                try {
-                    $this->dbh->beginTransaction();
-
-                    $sql = <<<SQL
-                        UPDATE articles SET
-                               title = :title,
-                               text = :text
-                        WHERE articlesID = :articlesID
-                        SQL;
-
-                    $stmt = $this->dbh->prepare($sql);
-                    $stmt->bindParam(":title", $this->title);
-                    $stmt->bindParam(":text", $this->text);
-                    $stmt->bindParam(":articlesID", $this->articlesID);
-                    $stmt->execute();
-                    if ($this->newSlug) {
-                        $sql = "UPDATE articles SET slug = :slug WHERE articlesID = :articlesID";
-                        $stmt = $this->dbh->prepare($sql);
-                        $stmt->bindParam(":slug", $this->slug);
-                        $stmt->bindParam(":articlesID", $this->articlesID);
-                        $stmt->execute();
-                    }
-                    $this->dbh->commit();
-                } catch (Exception $e) {
-                    //Något gick på tok - ångra
-                    $this->dbh->rollBack();
-
-                    //Ingen bra felhantering ännu...
-                    throw new Exception("Uppdatering av artikel misslyckad: " . $e->getMessage());
-                }
-            }
+            $stmt = $this->dbh->prepare($sql);
+            $stmt->bindParam(":slug", $this->slug);
+            $stmt->bindParam(":title", $this->title);
+            $stmt->bindParam(":text", $this->text);
+            $stmt->bindParam(":username", $this->username);
+            $stmt->execute();
+            $this->articlesID = $this->dbh->lastInsertId();
         } else {
             //Befintlig artikel ska spara med ett UPDATE-kommando i $sql
             //Position 2
+            try {
+                $this->dbh->beginTransaction();
+
+                $sql = <<<SQL
+                            UPDATE articles SET
+                                   title = :title,
+                                   text = :text
+                            WHERE articlesID = :articlesID
+                            SQL;
+
+                $stmt = $this->dbh->prepare($sql);
+                $stmt->bindParam(":title", $this->title);
+                $stmt->bindParam(":text", $this->text);
+                $stmt->bindParam(":articlesID", $this->articlesID);
+                $stmt->execute();
+                if ($this->newSlug) {
+                    $sql = "UPDATE articles SET slug = :slug WHERE articlesID = :articlesID";
+                    $stmt = $this->dbh->prepare($sql);
+                    $stmt->bindParam(":slug", $this->slug);
+                    $stmt->bindParam(":articlesID", $this->articlesID);
+                    $stmt->execute();
+                }
+                $this->dbh->commit();
+            } catch (Exception $e) {
+                //Något gick på tok - ångra
+                $this->dbh->rollBack();
+
+                //Ingen bra felhantering ännu...
+                throw new Exception("Uppdatering av artikel misslyckad: " . $e->getMessage());
+            }
         }
 
         //Vilken artikel var det som ändrades eller skapades
@@ -366,7 +363,12 @@ TAGSANDATTRIBUTES;
      */
     public static function fetch($id, PDO $dbh, $id_is_slug = false)
     {
-        // FIXME
+        //Vet inte om det är rätt hittade på något så det skulle funka
+        $stmt = $dbh->prepare("SELECT * FROM articles WHERE articlesID = :id");
+        $stmt->bindParam(":id", $id);
+        $stmt->execute();
+        $blogpost = $stmt->fetch();
+        return $blogpost;
         throw new Exception(__METHOD__ . " not implemented yet in " . __CLASS__);
     }
 

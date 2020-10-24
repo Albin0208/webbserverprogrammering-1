@@ -37,7 +37,7 @@
             Inläggets brödtext
             <strong class="error">{$b_error['text']}</strong>
           </label>
-          <textarea name="text" id="b_text" value="{$blogpost['text']}"></textarea>
+          <textarea name="text" id="b_text" value="{$blogpost['text']}">{$blogpost['text']}</textarea>
         </p>
         <!-- Saker som skapas automatisk av systemet -->
         <p>

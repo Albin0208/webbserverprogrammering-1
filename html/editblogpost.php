@@ -1,6 +1,8 @@
 <?php
 session_start();
 
+require_once "../includes/articles.php";
+
 if (empty($_SESSION['username'])) {
   $_SESSION['referer'] = filter_input(INPUT_SERVER, 'PHP_SELF', FILTER_SANITIZE_URL);
   header("Location: admin.php");
@@ -34,7 +36,7 @@ if (empty($_GET['id']) && empty($_POST)) {
   // $blogpost = $stmt->fetch();
 
   $blogpost = Articles::fetch($b_id, $dbh);
-  $blogpost = $blogpost->asArray();
+  // $blogpost = $blogpost->asArray();
 
   if (empty($blogpost)) {
     //Finns inget sådant inlägg
@@ -42,7 +44,50 @@ if (empty($_GET['id']) && empty($_POST)) {
     exit("<h1>Det finns inget bloginlägg med id {$b_id}</h1>\n");
   }
 } else {
-  //Här ska det ske kontroller och lagring i DB
+  //Grundläggande sanering
+  $a_id = filter_input(INPUT_POST, 'articlesID', FILTER_SANITIZE_NUMBER_INT);
+  $slug = filter_input(INPUT_POST, 'slug', FILTER_UNSAFE_RAW, FILTER_FLAG_STRIP_LOW);
+  $title = filter_input(INPUT_POST, 'title', FILTER_UNSAFE_RAW, FILTER_FLAG_STRIP_LOW);
+  $text = filter_input(INPUT_POST, 'text', FILTER_UNSAFE_RAW, FILTER_FLAG_STRIP_LOW);
+  $text = str_replace("\n", "_NEWLINE_", $text);
+  $text = filter_var($text, FILTER_UNSAFE_RAW, FILTER_FLAG_STRIP_LOW);
+  $text = str_replace("_NEWLINE", "\n", $text);
+
+  $article = new Articles($title, $text, $_SESSION['username'], $dbh);
+
+  //Töm variabler för att förhindrea oönskad användning
+  $_POST = array();
+  unset($a_id);
+  unset($slug);
+  unset($title);
+  unset($text);
+
+  if ($article->validate()) {
+    $slug = $article->getSlug();
+    //Kolla om en slug kunde skapas/hämtas
+    if ($slug) {
+      $article->save();
+      header("Location: blog.php?slug={$slug}");
+      exit;
+    }
+  }
+
+  //Kommer vi hit är det fel på indata
+  $b_error = $article->getErrorMessages();
+  $blogpost['title'] = $article->$title;
+  $blogpost['text'] = $article->$text;
+
+  //Automatisk skapad data hämtas ur DB vid uppdatering
+  //för att användas ihop med formuläret
+  if ($article->articlesID) {
+    //Återanvänds variabeln $article
+    $article = articles::fetch($article->articlesID, $dbh);
+    $blogpost['articlesID'] = "";
+    $blogpost['slug'] = "(skapas automatiskt)";
+    $blogpost['username'] = $_SESSION['username'];
+    $blogpost['pubdate'] = "snart (nytt inlägg)";
+  }
+
   exit("<h1>Kontroller och lagring ej klara ännu</h1>");
 }
 
