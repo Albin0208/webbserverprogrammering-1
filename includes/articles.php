@@ -98,7 +98,6 @@ TAGSANDATTRIBUTES;
      */
     public function __get($varname)
     {
-        throw new Exception(__METHOD__ . " not implemented yet in " . __CLASS__);
         if (in_array($varname, $this->accessibles, true)) {
             return $this->$varname;
         }
@@ -363,12 +362,13 @@ TAGSANDATTRIBUTES;
      */
     public static function fetch($id, PDO $dbh, $id_is_slug = false)
     {
-        //Vet inte om det är rätt hittade på något så det skulle funka
-        $stmt = $dbh->prepare("SELECT * FROM articles WHERE articlesID = :id");
-        $stmt->bindParam(":id", $id);
-        $stmt->execute();
-        $blogpost = $stmt->fetch();
-        return $blogpost;
+        // //Vet inte om det är rätt hittade på något så det skulle funka
+        // $stmt = $dbh->prepare("SELECT * FROM articles WHERE articlesID = :id");
+        // $stmt->bindParam(":id", $id);
+        // $stmt->execute();
+        // $blogpost = $stmt->fetch();
+        // return $blogpost;
+        return Articles;
         throw new Exception(__METHOD__ . " not implemented yet in " . __CLASS__);
     }
 
@@ -390,6 +390,6 @@ TAGSANDATTRIBUTES;
             $array[$key] = $this->$key;
         }
         return $array;
-        throw new Exception(__METHOD__ . " not implemented yet in " . __CLASS__);
+        // throw new Exception(__METHOD__ . " not implemented yet in " . __CLASS__);
     }
 }

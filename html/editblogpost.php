@@ -1,8 +1,6 @@
 <?php
 session_start();
 
-require_once "../includes/articles.php";
-
 if (empty($_SESSION['username'])) {
   $_SESSION['referer'] = filter_input(INPUT_SERVER, 'PHP_SELF', FILTER_SANITIZE_URL);
   header("Location: admin.php");
@@ -10,7 +8,7 @@ if (empty($_SESSION['username'])) {
 
 require "../includes/setting.php";
 require "../includes/global.inc.php";
-// require "../includes/articles.php";
+require "../includes/articles.php";
 
 $dbh = get_dbh();
 
@@ -36,7 +34,7 @@ if (empty($_GET['id']) && empty($_POST)) {
   // $blogpost = $stmt->fetch();
 
   $blogpost = Articles::fetch($b_id, $dbh);
-  // $blogpost = $blogpost->asArray();
+  $blogpost = $blogpost->asArray();
 
   if (empty($blogpost)) {
     //Finns inget sådant inlägg
@@ -51,9 +49,10 @@ if (empty($_GET['id']) && empty($_POST)) {
   $text = filter_input(INPUT_POST, 'text', FILTER_UNSAFE_RAW, FILTER_FLAG_STRIP_LOW);
   $text = str_replace("\n", "_NEWLINE_", $text);
   $text = filter_var($text, FILTER_UNSAFE_RAW, FILTER_FLAG_STRIP_LOW);
-  $text = str_replace("_NEWLINE", "\n", $text);
+  $text = str_replace("_NEWLINE_", "\n", $text);
+  var_dump($title);
 
-  $article = new Articles($title, $text, $_SESSION['username'], $dbh);
+  $article = new Articles($title, $text, $_SESSION['username'], $dbh, $a_id);
 
   //Töm variabler för att förhindrea oönskad användning
   $_POST = array();
