@@ -30,7 +30,7 @@
             Inläggets rubrik
             <strong class="error">{$b_error['title']}</strong>
           </label>
-          <input name="text" id="b_title" value="{$blogpost['title']}">
+          <input name="title" id="b_title" value="{$blogpost['title']}">
         </p>
         <p>
           <label for="b_title">

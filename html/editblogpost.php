@@ -43,6 +43,9 @@ if (empty($_GET['id']) && empty($_POST)) {
   }
 } else {
   //Grundläggande sanering
+  echo "<pre>" .
+    var_dump($_POST)
+    . "</pre>";
   $a_id = filter_input(INPUT_POST, 'articlesID', FILTER_SANITIZE_NUMBER_INT);
   $slug = filter_input(INPUT_POST, 'slug', FILTER_UNSAFE_RAW, FILTER_FLAG_STRIP_LOW);
   $title = filter_input(INPUT_POST, 'title', FILTER_UNSAFE_RAW, FILTER_FLAG_STRIP_LOW);
@@ -50,7 +53,6 @@ if (empty($_GET['id']) && empty($_POST)) {
   $text = str_replace("\n", "_NEWLINE_", $text);
   $text = filter_var($text, FILTER_UNSAFE_RAW, FILTER_FLAG_STRIP_LOW);
   $text = str_replace("_NEWLINE_", "\n", $text);
-  var_dump($title);
 
   $article = new Articles($title, $text, $_SESSION['username'], $dbh, $a_id);
 
@@ -73,21 +75,24 @@ if (empty($_GET['id']) && empty($_POST)) {
 
   //Kommer vi hit är det fel på indata
   $b_error = $article->getErrorMessages();
-  $blogpost['title'] = $article->$title;
-  $blogpost['text'] = $article->$text;
+  // $blogpost['title'] = $article->$title;
+  // $blogpost['text'] = $article->$text;
 
   //Automatisk skapad data hämtas ur DB vid uppdatering
   //för att användas ihop med formuläret
   if ($article->articlesID) {
     //Återanvänds variabeln $article
     $article = articles::fetch($article->articlesID, $dbh);
+    $blogpost['articlesID'] = $article->articlesID;
+    $blogpost['slug'] = $article->slug;
+    $blogpost['username'] = $article->username;
+    $blogpost['pubdate'] = $article->pubdate;
+  } else {
     $blogpost['articlesID'] = "";
     $blogpost['slug'] = "(skapas automatiskt)";
     $blogpost['username'] = $_SESSION['username'];
     $blogpost['pubdate'] = "snart (nytt inlägg)";
   }
-
-  exit("<h1>Kontroller och lagring ej klara ännu</h1>");
 }
 
 //Formelementet bör alltid ha escapad HTML-kod

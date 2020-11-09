@@ -1,3 +1,2 @@
 RewriteEngine On
-# FIXME enligt avsnitt 18.1 i Läroboken
-
+RewriteRule ^blog/(.+)/$ blog.php?slug=$1

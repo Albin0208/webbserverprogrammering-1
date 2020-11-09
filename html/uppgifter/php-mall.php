@@ -8,6 +8,3 @@
 // [Kodblock med inställningar och inledande bearbetningar]
 
 header("Content-type: text/html; charset=utf-8");
-?>
-FIXME
-

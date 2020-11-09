@@ -368,7 +368,7 @@ TAGSANDATTRIBUTES;
         // $stmt->execute();
         // $blogpost = $stmt->fetch();
         // return $blogpost;
-        return Articles;
+
         throw new Exception(__METHOD__ . " not implemented yet in " . __CLASS__);
     }
 

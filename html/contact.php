@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Skript som hanterar data från ett kontaktformulär för nybörjarkurser i webbteknik
  *
@@ -65,12 +66,6 @@
  * @licence Creative Commons Attribution-Share Alike 3.0 Unported {@link http://creativecommons.org/licenses/by-sa/3.0/}
  */
 
-
-trigger_error(
-    "<pre>Ta bort detta fel när du läst kapitel 17 och studerat koden.<br />Det finns på rad " 
-    . (__LINE__ - 2) . " i filen " . __FILE__, E_USER_ERROR
-);
-
 /**
  * Configuration
  */
@@ -89,7 +84,7 @@ session_start();
 header('Content-type: text/html; charset=UTF-8');
 
 // Check that we are at least on PHP 5.3
-if ( phpversion() < '5.3' ) {
+if (phpversion() < '5.3') {
     trigger_error('The server is running a version of PHP that is too old. 5.3+ is required.');
     $has_config_errors = true;
 }
@@ -98,23 +93,23 @@ if ( phpversion() < '5.3' ) {
 
 $has_config_errors = false;
 
-if ( array_diff($required_fields, array("uname", "umail") ) ) {
+if (array_diff($required_fields, array("uname", "umail"))) {
     trigger_error('Forbidden value in $required_fields.', E_USER_NOTICE);
     $has_config_errors = true;
 }
 
-if ( ! is_readable($path_to_templates . $form_template) ) {
+if (!is_readable($path_to_templates . $form_template)) {
     trigger_error('Form template (' . $path_to_templates . $form_template . ')not available or readable.', E_USER_NOTICE);
     $has_config_errors = true;
 }
 
-if ( ! is_readable($path_to_templates . $success_template) ) {
+if (!is_readable($path_to_templates . $success_template)) {
     trigger_error('Success template (' . $path_to_templates . $success_template . ') not available or readable.', E_USER_NOTICE);
     $has_config_errors = true;
 }
 
-if ( ! empty($recipient) ) {
-    if ( ! filter_var($recipient, FILTER_VALIDATE_EMAIL) ) {
+if (!empty($recipient)) {
+    if (!filter_var($recipient, FILTER_VALIDATE_EMAIL)) {
         trigger_error('Recipient e-mail address not functional. Leave blank for dry runs.', E_USER_NOTICE);
     }
 }
@@ -122,11 +117,11 @@ if ( ! empty($recipient) ) {
 // Check that the message-template does not allow SMTP-headers
 // We do this by allowing the use of colon on the first line
 // Note that this check is not very technically precise. It is easy to understand, though.
-if ( strpos(":", $mail_template) < strpos("\n", $mail_template) ) {
+if (strpos(":", $mail_template) < strpos("\n", $mail_template)) {
     trigger_error('Mail template is not safe for usage. It must not contan a colon on the first line.', E_USER_NOTICE);
 }
 
-if ( $has_config_errors ) {
+if ($has_config_errors) {
     exit("<h1>Configuration errors exists. Check your settings and re-run the script.</h1>");
 }
 
@@ -146,14 +141,14 @@ $get_in_touch_checked = "";
 $placeholder_mmessage = $mmessage;
 
 // Skip tests if the form is displayed for the first time
-if ( ! empty($_POST) ) {
+if (!empty($_POST)) {
 
     // Copy all values from $_POST as it should not be treated as a writable array
     $unsafe = $_POST;
     $_POST  = array(); // No longer needed. Empty to avoid further usage.
 
     // If prevent_multiple_submits is missing it is a configuration error
-    if ( empty($unsafe['prevent_multiple_submits']) ) {
+    if (empty($unsafe['prevent_multiple_submits'])) {
         echo "<h1>Configuration error: prevent_multiple_submits field is missing in contact form.</h1>";
         exit;
     }
@@ -161,11 +156,11 @@ if ( ! empty($_POST) ) {
     // Make sure that 'prevent_multiple_submits' is aligned with the session variable, to prevent multiple submits
     // when data has been successfully entered and to prevent tampering like CSRF
     if (
-        empty($_SESSION['prevent_multiple_submits']) OR
+        empty($_SESSION['prevent_multiple_submits']) or
         $_SESSION['prevent_multiple_submits'] !== $unsafe['prevent_multiple_submits']
     ) {
         // In this case we simply reload the form from scratch
-        header('Location: '. $_SERVER['PHP_SELF']);
+        header('Location: ' . $_SERVER['PHP_SELF']);
         exit;
     }
 
@@ -178,8 +173,8 @@ if ( ! empty($_POST) ) {
     );
 
     // Do initial cleanup before tests
-    foreach ( $unsafe as $key => $data ) {
-        if ( ! is_well_formed_utf8($data) ) {
+    foreach ($unsafe as $key => $data) {
+        if (!is_well_formed_utf8($data)) {
             // Non-well formed UTF-8 is a technical error or a server configuration error
             // or perhaps a malicious attempt to manipulate the system
             // The script will not accept this and will exit at this point
@@ -207,16 +202,16 @@ if ( ! empty($_POST) ) {
     // are new to PHP
 
     // Test get_in_touch - if used (by definition it can not be required)
-    if ( isset($still_unsafe['get_in_touch']) && $still_unsafe['get_in_touch'] !== 'yes' ) {
+    if (isset($still_unsafe['get_in_touch']) && $still_unsafe['get_in_touch'] !== 'yes') {
         // This is a checkbox field
         // If it has been tampered with or if the form returns bad values we simply stop executing
         echo "<h1>Bad data from checkbox field</h1>\n";
         echo "<p>This is due to a configuration error or due to tempering with the form as such.</p>";
         exit;
     }
-    if ( isset($still_unsafe['get_in_touch']) ) {
+    if (isset($still_unsafe['get_in_touch'])) {
         // If user wishes to be contacted he/she must submit an email adress regardless of configuration
-        if ( ! in_array('umail', $required_fields) ) {
+        if (!in_array('umail', $required_fields)) {
             $required_fields[] = 'umail';
         }
     } else {
@@ -227,24 +222,26 @@ if ( ! empty($_POST) ) {
     $testing = isset($still_unsafe['uname']) ? $still_unsafe['uname'] : null;
     // Note. The line above is using the new PHP 5.3 syntax for ternary operators
     // The idea is to assign null when undefined, so we do not have to handle that case for all following checks
-    if ( in_array('uname', $required_fields) && mb_strlen($testing, 'utf-8') < 2 ) {
+    if (in_array('uname', $required_fields) && mb_strlen($testing, 'utf-8') < 2) {
         // No value at all or too short
         $error_fields[] = 'uname';
-    } elseif ( mb_strlen($testing, 'utf-8') > 100 ) {
+    } elseif (mb_strlen($testing, 'utf-8') > 100) {
         // Too long
         $error_fields[] = 'uname';
-    } elseif ( ! preg_match("/^(\\pL|\\x20|-)+$/u", $testing) ) {
+    } elseif (!preg_match("/^(\\pL|\\x20|-)+$/u", $testing)) {
         // Contains forbidden characters
         // We only allow Unicode Letters and space or hyphen
         $error_fields[] = 'uname';
     }
 
     $testing = isset($still_unsafe['umail']) ? $still_unsafe['umail'] : null;
-    if ( empty($testing) && in_array('umail', $required_fields) ) {
+    if (empty($testing) && in_array('umail', $required_fields)) {
         // No value at all, but it is required
         $error_fields[] = 'umail';
-    } elseif ( ! empty($testing) &&
-               ! filter_var($testing, FILTER_VALIDATE_EMAIL) ) {
+    } elseif (
+        !empty($testing) &&
+        !filter_var($testing, FILTER_VALIDATE_EMAIL)
+    ) {
         // There is something but not an email address
         $error_fields[] = 'umail';
     }
@@ -253,13 +250,13 @@ if ( ! empty($_POST) ) {
     // It is - as said- kept this way for pedagogical purposes
 
     $testing = isset($still_unsafe['msubject']) ? $still_unsafe['msubject'] : null;
-    if ( in_array('msubject', $required_fields) && mb_strlen($testing, 'utf-8') < 5 ) {
+    if (in_array('msubject', $required_fields) && mb_strlen($testing, 'utf-8') < 5) {
         // No value at all or too short
         $error_fields[] = 'msubject';
-    } elseif ( mb_strlen($testing, 'utf-8') > 150 ) {
+    } elseif (mb_strlen($testing, 'utf-8') > 150) {
         // Too long
         $error_fields[] = 'msubject';
-    } elseif ( ! preg_match("/^(\\pL|\\pN|\\pS|\\pP|\\x20)+$/u", $testing) ) {
+    } elseif (!preg_match("/^(\\pL|\\pN|\\pS|\\pP|\\x20)+$/u", $testing)) {
         // We only allow Unicode Letters, Numbers, Symbols, Punctuation and space
         $error_fields[] = 'msubject';
     }
@@ -268,24 +265,24 @@ if ( ! empty($_POST) ) {
     // that could be abstracted into a function or better usage of the filter extension
     // (Still kept for pedagogic purposes...)
     $testing = isset($still_unsafe['mmessage']) ? $still_unsafe['mmessage'] : null;
-    if ( in_array('mmessage', $required_fields) && mb_strlen($testing, 'utf-8') < 25 ) {
+    if (in_array('mmessage', $required_fields) && mb_strlen($testing, 'utf-8') < 25) {
         // No value at all or too short
         $error_fields[] = 'mmessage';
-    } elseif ( mb_strlen($testing, 'utf-8') > 2500 ) {
+    } elseif (mb_strlen($testing, 'utf-8') > 2500) {
         // Too long
         $error_fields[] = 'mmessage';
-    } elseif ( ! preg_match("/^(\\pL|\\pN|\\pS|\\pP|\\x20|\\xD\\xA)+$/u", $testing) ) {
+    } elseif (!preg_match("/^(\\pL|\\pN|\\pS|\\pP|\\x20|\\xD\\xA)+$/u", $testing)) {
         // We only allow Unicode Letters, Numbers, Symbols, Punctuation, space and newlines
         // Note that newlines have been harmonized to \r\n = \\xD\\xA
         // I prefer hex codes in this regexp for readability reasons but admit its a matter of taste
         $error_fields[] = 'mmessage';
-    } elseif ( levenshtein($testing, $placeholder_mmessage) < 10 ) {
+    } elseif (levenshtein($testing, $placeholder_mmessage) < 10) {
         // Levenshtein is used to make sure that the message has substantially changed from the placeholder one
         $error_fields[] = 'mmessage';
     }
 
     // Activate error messages and log to console
-    foreach ( $error_fields as $ef ) {
+    foreach ($error_fields as $ef) {
         $error_name = $ef . '_error';
         $extra_name = $ef . '_extra';
         // Assigning error messages to the "extra" variable
@@ -295,19 +292,19 @@ if ( ! empty($_POST) ) {
 
     $successfully_sent = false;
 
-    if ( empty($error_fields) ) {
+    if (empty($error_fields)) {
         // Send mail and show success template
 
         // The first values are safe for usage in e-mail, since they have been filtered and can not contain
         // data that acts as SMTP-headers
         $smtpsafe_subject = $still_unsafe['msubject'];
 
-        if ( empty($still_unsafe['uname']) ) {
+        if (empty($still_unsafe['uname'])) {
             $smtpsafe_replyto = "";
         } else {
             $smtpsafe_replyto = $still_unsafe['uname'];
         }
-        if ( empty($still_unsafe['umail']) ) {
+        if (empty($still_unsafe['umail'])) {
             $smtpsafe_replyto .= "";
         } else {
             $smtpsafe_replyto .= '<' . $still_unsafe['umail'] . '>';
@@ -320,14 +317,13 @@ if ( ! empty($_POST) ) {
 
         // Store return value from the mail function to enable error message
         // Dry run? (Testing)
-        if ( empty($recipient) ) {
+        if (empty($recipient)) {
             $successfully_sent = true;
         } else {
             $successfully_sent = mail($recipient, $smtpsafe_subject, $message, "Reply-to: {$smtpsafe_replyto}");
         }
 
         $_SESSION['prevent_multiple_submits'] = null;
-
     }
 
     $still_unsafe['uname']    = isset($still_unsafe['uname'])    ? $still_unsafe['uname']    : '';
@@ -345,33 +341,33 @@ if ( ! empty($_POST) ) {
     $mmessage = htmlspecialchars($still_unsafe['mmessage']);
 
     // Set selected attribute on radio button according to user choice
-    if ( isset($still_unsafe['mcategory']) ) {
-        switch ( $still_unsafe['mcategory'] ) {
-        case 'complaint':
-            $mcat_complaint_checked = 'checked="checked"';
-            break;
-        case 'suggestion':
-            $mcat_suggestion_checked = 'checked="checked"';
-            break;
-        case 'other':
-            $mcat_other_checked = 'checked="checked"';
-            break;
+    if (isset($still_unsafe['mcategory'])) {
+        switch ($still_unsafe['mcategory']) {
+            case 'complaint':
+                $mcat_complaint_checked = 'checked="checked"';
+                break;
+            case 'suggestion':
+                $mcat_suggestion_checked = 'checked="checked"';
+                break;
+            case 'other':
+                $mcat_other_checked = 'checked="checked"';
+                break;
         }
     }
     // Re-enable the checkbox if checked
-    if ( ! empty($still_unsafe['get_in_touch']) ) {
+    if (!empty($still_unsafe['get_in_touch'])) {
         $get_in_touch_checked = 'checked="checked"';
     }
 }
 
 // Use form template for the first run or if the form has errors
-$use_form_template = empty($still_unsafe) || ! empty($error_fields);
+$use_form_template = empty($still_unsafe) || !empty($error_fields);
 
-if ( $use_form_template ) {
+if ($use_form_template) {
     $template = $path_to_templates . $form_template;
     // The value used to prevent multiple submits
     $_SESSION['prevent_multiple_submits'] = uniqid('prevent_', true);
-} elseif ( $successfully_sent ) {
+} elseif ($successfully_sent) {
     $template = $path_to_templates . $success_template;
     // Use the SMTP-formatted message in this scenario
     $mmessage = nl2br(htmlspecialchars($message));
@@ -400,17 +396,17 @@ require $template;
  */
 function is_well_formed_utf8($string)
 {
-    if ( empty($string) ) {
+    if (empty($string)) {
         return true;
     }
-    if ( function_exists('mb_check_encoding') ) {
+    if (function_exists('mb_check_encoding')) {
         return mb_check_encoding($string, 'UTF-8');
     }
     // iconv is the second fastest and best way to check this but it might not be installed
     // The comments in this blog post will explain what is going on
     // http://www.sitepoint.com/blogs/2006/08/09/scripters-utf-8-survival-guide-slides/
     // Please note that we are validating, not cleaning, the input
-    if ( function_exists('iconv') ) {
+    if (function_exists('iconv')) {
         return iconv('UTF-8', 'UTF-8', $string) == $string;
     }
     // Falling back to slower regexp if iconv is not available
@@ -418,4 +414,3 @@ function is_well_formed_utf8($string)
     // nothing will match
     return preg_match('/^.{1}/us', $string) == 1;
 }
-

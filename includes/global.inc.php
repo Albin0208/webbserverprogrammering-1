@@ -78,7 +78,6 @@ function get_dbh()
  */
 function fetch_blog_comments($articlesID, $dbh)
 {
-    // FIXME
     $sql = "SELECT * FROM comments WHERE articlesID = :aid ORDER BY ctime ASC";
     $stmt = $dbh->prepare($sql);
     $stmt->bindParam(":aid", $articlesID);

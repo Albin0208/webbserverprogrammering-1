@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Konfigurationsfil för kontaktformulärsskriptet
  *
@@ -8,11 +9,6 @@
  * @author Lars Gunther
  * @licence Creative Commons Attribution-Share Alike 3.0 Unported {@link http://creativecommons.org/licenses/by-sa/3.0/}
  */
-
-trigger_error(
-    "<pre>Ta bort detta fel när du läst kapitel 17 och studerat koden.<br />Det finns på rad " 
-    . (__LINE__ - 2) . " i filen " . __FILE__, E_USER_ERROR
-);
 
 /**
  * Mejladress  till den som ska ta emot meddelandet (din egen adress)
@@ -119,7 +115,7 @@ $required_fields = array(
     // "uname"
     "uname", "umail"
 );
- 
+
 /**
  * Sökväg till katalogen där mallarna finns
  * @var string
@@ -169,5 +165,3 @@ MT;
  * @var string
  */
 $get_in_touched_is_checked_message = "Avsändaren vill bli kontaktad.";
-
-

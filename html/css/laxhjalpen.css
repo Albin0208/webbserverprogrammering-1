@@ -202,7 +202,7 @@ Subpages
 .subpage > header h1 > span {
   color: #a62f00;
 }
-/* TODO: Video som förklarar kantlinjer med denna */
+
 hr {
   padding: 0.5em; /* To make sub-pages have similar look as p.tag-line */
   border-style: double;
@@ -367,7 +367,6 @@ input[type="email"] {
 textarea {
   width: 200px;
   height: 100px;
-  /* TODO: Gör demo med resize */
   resize: vertical;
 }
 input[type="submit"] {
