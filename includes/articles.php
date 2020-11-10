@@ -169,7 +169,7 @@ TAGSANDATTRIBUTES;
             $config->set('HTML.Trusted', true);
             $config->set('HTML.Allowed', $this::TEXTHTML);
             $config->set('Output.Newline', '\n');
-            $this->text = $purifier->purify($this->title);
+            $this->text = $purifier->purify($this->text);
 
             if (mb_strlen($this->text, "utf-8") < 100) {
                 $this->isValid = false;
@@ -182,7 +182,7 @@ TAGSANDATTRIBUTES;
 
         $this->hasBeenValidated = true;
         return $this->isValid;
-        throw new Exception(__METHOD__ . " not implemented yet in " . __CLASS__);
+        // throw new Exception(__METHOD__ . " not implemented yet in " . __CLASS__);
     }
 
     /**
@@ -294,7 +294,7 @@ TAGSANDATTRIBUTES;
     {
         //Felaktiga inlägg ska inte sparas
         if (!$this->isValid || !$this->slug) {
-            throw new Exception("Attempting to svae invalid article");
+            throw new Exception("Attempting to save invalid article");
         }
 
         if (empty($this->articlesID)) {
@@ -302,7 +302,7 @@ TAGSANDATTRIBUTES;
             //Position 1
             $sql = <<<SQL
                 INSERT INTO articles (articlesID, slug, title, text, username, pubdate)
-                VALUES (NULL, :slug, :title, :text, :username, :pubdate)
+                VALUES (NULL, :slug, :title, :text, :username, NOW())
                 SQL;
             $stmt = $this->dbh->prepare($sql);
             $stmt->bindParam(":slug", $this->slug);

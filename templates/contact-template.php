@@ -16,9 +16,8 @@ $h1span = "Kontakta oss";
   <meta charset="utf-8" />
   <title>Kontakt - Läxhjälpen</title>
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <base href="/" />
   <link href='http://fonts.googleapis.com/css?family=Merienda+One' rel='stylesheet' />
-  <link href="html/css/laxhjalpen.css" rel="stylesheet" />
+  <link href="css/laxhjalpen.css" rel="stylesheet" />
 </head>
 
 <body class="subpage">

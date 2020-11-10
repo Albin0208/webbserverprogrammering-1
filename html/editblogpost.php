@@ -43,9 +43,9 @@ if (empty($_GET['id']) && empty($_POST)) {
   }
 } else {
   //Grundläggande sanering
-  echo "<pre>" .
-    var_dump($_POST)
-    . "</pre>";
+  // echo "<pre>" .
+  //   var_dump($_POST)
+  //   . "</pre>";
   $a_id = filter_input(INPUT_POST, 'articlesID', FILTER_SANITIZE_NUMBER_INT);
   $slug = filter_input(INPUT_POST, 'slug', FILTER_UNSAFE_RAW, FILTER_FLAG_STRIP_LOW);
   $title = filter_input(INPUT_POST, 'title', FILTER_UNSAFE_RAW, FILTER_FLAG_STRIP_LOW);
@@ -75,8 +75,8 @@ if (empty($_GET['id']) && empty($_POST)) {
 
   //Kommer vi hit är det fel på indata
   $b_error = $article->getErrorMessages();
-  // $blogpost['title'] = $article->$title;
-  // $blogpost['text'] = $article->$text;
+  $blogpost['title'] = $article->$title;
+  $blogpost['text'] = $article->$text;
 
   //Automatisk skapad data hämtas ur DB vid uppdatering
   //för att användas ihop med formuläret

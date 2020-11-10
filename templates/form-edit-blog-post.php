@@ -33,7 +33,7 @@
           <input name="title" id="b_title" value="{$blogpost['title']}">
         </p>
         <p>
-          <label for="b_title">
+          <label for="b_text">
             Inläggets brödtext
             <strong class="error">{$b_error['text']}</strong>
           </label>
