@@ -28,13 +28,9 @@ if (empty($_GET['id']) && empty($_POST)) {
   //Ett befintligt inlägg ska redigeras
   //I framtiden flyttar vi denna DB-anropande kod till en klass
   $b_id = filter_input(INPUT_GET, 'id', FILTER_SANITIZE_NUMBER_INT);
-  // $stmt = $dbh->prepare("SELECT * FROM articles WHERE articlesID = :id");
-  // $stmt->bindParam(":id", $b_id);
-  // $stmt->execute();
-  // $blogpost = $stmt->fetch();
 
   $blogpost = Articles::fetch($b_id, $dbh);
-  $blogpost = $blogpost->asArray();
+  // $blogpost = $blogpost->asArray();
 
   if (empty($blogpost)) {
     //Finns inget sådant inlägg
@@ -43,9 +39,6 @@ if (empty($_GET['id']) && empty($_POST)) {
   }
 } else {
   //Grundläggande sanering
-  // echo "<pre>" .
-  //   var_dump($_POST)
-  //   . "</pre>";
   $a_id = filter_input(INPUT_POST, 'articlesID', FILTER_SANITIZE_NUMBER_INT);
   $slug = filter_input(INPUT_POST, 'slug', FILTER_UNSAFE_RAW, FILTER_FLAG_STRIP_LOW);
   $title = filter_input(INPUT_POST, 'title', FILTER_UNSAFE_RAW, FILTER_FLAG_STRIP_LOW);

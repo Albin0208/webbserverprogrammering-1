@@ -362,12 +362,16 @@ TAGSANDATTRIBUTES;
      */
     public static function fetch($id, PDO $dbh, $id_is_slug = false)
     {
-        // //Vet inte om det är rätt hittade på något så det skulle funka
-        // $stmt = $dbh->prepare("SELECT * FROM articles WHERE articlesID = :id");
-        // $stmt->bindParam(":id", $id);
-        // $stmt->execute();
-        // $blogpost = $stmt->fetch();
-        // return $blogpost;
+        $sql = <<<SQL
+        SELECT a . *, CONCAT(u.firstname, ' ', u.lastname) AS author
+        FROM articles AS a
+        NATURAL JOIN users AS u
+        WHERE articlesID =:articlesID
+        SQL;
+        $stmt = $dbh->prepare($sql);
+        $stmt->bindParam(":articlesID", $id);
+        $stmt->execute();
+        return $stmt->fetch();
 
         throw new Exception(__METHOD__ . " not implemented yet in " . __CLASS__);
     }

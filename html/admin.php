@@ -56,9 +56,11 @@ if (empty($_SESSION['username']) && empty($_POST)) {
   }
   // exit;
 } elseif (empty($_POST)) {
-  echo "<h2>Inloggad som {$_SESSION['username']}</h2>";
-  echo "<p><a href=\"logout.php\">Logga ut</p>";
-  // exit;
+  // echo "<h2>Inloggad som {$_SESSION['username']}</h2>";
+  // echo "<p><a href=\"logout.php\">Logga ut</p>";
+  $h1span = "Administration";
+  $admintitle = "Administration av Laxhjälpen";
+  $adminbody = "adminpanel";
 } else {
 
   if (isset($_POST['new_password'])) {
@@ -67,7 +69,7 @@ if (empty($_SESSION['username']) && empty($_POST)) {
   } else {
     echo "<h2>Inloggad som {$_SESSION['username']}</h2>";
     echo "<p><a href=\"logout.php\">Logga ut</p>";
-    // exit;
+    exit;
   }
 }
 
